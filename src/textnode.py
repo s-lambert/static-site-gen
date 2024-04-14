@@ -9,7 +9,7 @@ class TextNode:
     
   def to_html_node(self):
     match self.__text_type:
-      case "text";
+      case "text":
         return LeafNode(None, self.__text)
       case "bold":
         return LeafNode("b", self.__text)
@@ -25,7 +25,7 @@ class TextNode:
         raise Exception("unknown type")
 
   def __eq__(self, comp):
-    return self.repr() == comp.repr()
+    return self.__repr__() == comp.__repr__()
   
   def __repr__(self):
     return f"TextNode({self.__text}, {self.__text_type}, {self.__url})"
