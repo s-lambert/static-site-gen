@@ -24,6 +24,9 @@ class TextNode:
       case _:
         raise Exception("unknown type")
 
+  def to_html(self):
+    return self.to_html_node().to_html()
+
   def __eq__(self, comp):
     return self.__repr__() == comp.__repr__()
   

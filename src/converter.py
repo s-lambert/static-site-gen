@@ -4,6 +4,56 @@ from htmlnode import HtmlNode
 from textnode import TextNode
 
 
+def markdown_to_blocks(markdown):
+  lines = map(lambda l: l.strip(), markdown.split("\n"))
+  blocks = []
+  current_block = []
+  for line in lines:
+    if len(line) == 0:
+      if len(current_block) != 0:
+        blocks.append(current_block)
+        current_block = []
+      continue
+    current_block.append(line)
+  return blocks
+
+def block_to_blocktype(block):
+  if len(block) == 0:
+    raise Exception("invalid block")
+  if len(block) == 1 and re.match(r"#*\s.*", block[0]):
+    return "heading"
+  if len(block) >= 3 and block[0].startswith("```") and block[-1].endswith("```"):
+    return "code"
+  if all(map(lambda s: s.startswith(">"), block)):
+    return "quote"
+  if all(map(lambda s: s[0] == "*" or s[0] == "-", block)):
+    return "unordered_list"
+  
+  is_ordered_list = True
+  ordinal = 0
+  for line in block:
+    matches = re.match(r"([0-9]*)\..*", line)
+    if matches == None:
+      is_ordered_list = False
+      print("no matches")
+      break
+    try:
+      value = int(matches[1])
+      ordinal += 1
+      if value != ordinal:
+        print("ordinal mismatch")
+        is_ordered_list = False
+        break
+    except:
+      print("exception")
+      is_ordered_list = False
+      break
+  
+  if is_ordered_list:
+    return "ordered_list"
+  
+  return "paragraph"
+
 def text_to_textnodes(text):
   return split_nodes_link(split_nodes_image(split_nodes_delimiter(split_nodes_delimiter(split_nodes_delimiter([TextNode(text, "text")], "`", "code"), "**", "bold"), "*", "italic")))
 
@@ -109,3 +159,75 @@ def find_pairs(regex, text):
   for pair in matches:
     pairs.append((pair[0], pair[1]))
   return pairs
+
+def block_to_heading(block):
+  return HtmlNode(
+    f"h{block[0].count("#")}",
+    block[0]
+  )
+
+def block_to_code(block):
+  return HtmlNode(
+    "pre",
+    None,
+    [
+      HtmlNode(
+        "code",
+        "\n".join(block[1:-1])
+      )
+    ]
+  )
+
+def block_to_quote(block):
+  return HtmlNode(
+    "blockquote",
+    "\n".join(block)
+  )
+
+def block_to_unordered_list(block):
+  return HtmlNode(
+    "ul",
+    None,
+    map(lambda l: HtmlNode("li", l.lstrip("* ")), block)
+  )
+
+def block_to_ordered_list(block):
+  return HtmlNode(
+    "ol",
+    None,
+    map(lambda l: HtmlNode("li", l.lstrip("0123456789 ")), block)
+  )
+
+def block_to_paragraph(block):
+  return HtmlNode(
+    'p',
+    None,
+    sum(map(lambda l: text_to_textnodes(l + "\n"), block), []),
+    None
+  )
+
+def markdown_to_html_node(markdown):
+  blocks = markdown_to_blocks(markdown)
+  nodes = []
+  for block in blocks:
+    blocktype = block_to_blocktype(block)
+    match blocktype:
+      case "heading":
+        nodes.append(block_to_heading(block))
+      case "code":
+        nodes.append(block_to_code(block))
+      case "quote":
+        nodes.append(block_to_quote(block))
+      case "unordered_list":
+        nodes.append(block_to_unordered_list(block))
+      case "ordered_list":
+        nodes.append(block_to_ordered_list(block))
+      case "paragraph":
+        nodes.append(block_to_paragraph(block))
+      case _:
+        raise Exception("unknown blocktype")
+  
+  for node in nodes:
+    print(node)
+  
+  return nodes
