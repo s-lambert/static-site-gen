@@ -11,7 +11,7 @@ class HtmlNode:
 
     content = ""
     if self.__children != None:
-      content = "\n".join(map(lambda c: c.to_html(), self.__children))
+      content = "".join(map(lambda c: c.to_html(), self.__children))
     elif self.__value != None:
       content = self.__value
 
