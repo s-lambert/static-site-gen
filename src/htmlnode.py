@@ -15,7 +15,7 @@ class HtmlNode:
     elif self.__value != None:
       content = self.__value
 
-    return f"<{self.__tag}{self.props_to_html()}>{content}</a>"
+    return f"<{self.__tag}{self.props_to_html()}>{content}</{self.__tag}>"
   
   def props_to_html(self):
     prop_string = ""
