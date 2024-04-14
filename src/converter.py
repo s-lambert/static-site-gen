@@ -15,6 +15,9 @@ def markdown_to_blocks(markdown):
         current_block = []
       continue
     current_block.append(line)
+  if len(current_block) != 0:
+    blocks.append(current_block)
+    current_block = []
   return blocks
 
 def block_to_blocktype(block):
@@ -35,7 +38,6 @@ def block_to_blocktype(block):
     matches = re.match(r"([0-9]*)\..*", line)
     if matches == None:
       is_ordered_list = False
-      print("no matches")
       break
     try:
       value = int(matches[1])
@@ -121,11 +123,13 @@ def split_nodes_link(old_nodes):
     if len(parts) == 1:
       new_nodes.append(old_node)
       continue
-    
+
+    print(parts)
     split_nodes = []
     for i in range(0, len(parts)):
       # If it's odd, then it's a link
       if i % 2 == 1:
+        print(parts[i])
         split_nodes.append(TextNode(parts[i][0], "link", parts[i][1]))
       elif i % 2 == 0:
         split_nodes.append(TextNode(parts[i], "text"))
@@ -163,7 +167,7 @@ def find_pairs(regex, text):
 def block_to_heading(block):
   return HtmlNode(
     f"h{block[0].count("#")}",
-    block[0]
+    block[0].lstrip("# ")
   )
 
 def block_to_code(block):
@@ -195,7 +199,7 @@ def block_to_ordered_list(block):
   return HtmlNode(
     "ol",
     None,
-    map(lambda l: HtmlNode("li", l.lstrip("0123456789 ")), block)
+    map(lambda l: HtmlNode("li", l.lstrip("0123456789. ")), block)
   )
 
 def block_to_paragraph(block):
@@ -208,6 +212,7 @@ def block_to_paragraph(block):
 
 def markdown_to_html_node(markdown):
   blocks = markdown_to_blocks(markdown)
+  print("BLOCKS", blocks)
   nodes = []
   for block in blocks:
     blocktype = block_to_blocktype(block)
@@ -226,8 +231,5 @@ def markdown_to_html_node(markdown):
         nodes.append(block_to_paragraph(block))
       case _:
         raise Exception("unknown blocktype")
-  
-  for node in nodes:
-    print(node)
   
   return nodes
