@@ -27,7 +27,7 @@ class HtmlNode:
   def __eq__(self, comp):
     if comp == None:
       return False
-    return self.to_html() == comp.to_html()
+    return self.__repr__() == comp.__repr__()
   
   def __repr__(self):
     return self.to_html()

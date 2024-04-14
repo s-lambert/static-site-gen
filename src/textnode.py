@@ -1,5 +1,5 @@
 from leafnode import LeafNode
-
+from htmlnode import HtmlNode
 
 class TextNode:
   def __init__(self, text, text_type, url=None):
@@ -20,7 +20,7 @@ class TextNode:
       case "link":
         return LeafNode("a", self.__text, { "href": self.__url })
       case "image":
-        return LeafNode("img", None, { "href": self.__url, "alt": self.__text })
+        return HtmlNode("img", None, None, { "href": self.__url, "alt": self.__text })
       case _:
         raise Exception("unknown type")
 
